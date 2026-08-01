@@ -29,6 +29,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      DH_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -66,7 +68,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 登录 Docker Hub
-        if: github.event_name != 'pull_request' && secrets.DOCKERHUB_USERNAME != ''
+        if: github.event_name != 'pull_request' && env.DH_USERNAME != ''
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -91,7 +93,7 @@ jobs:
           load: true
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ${{ steps.image.outputs.name }}:smoke
+            ${{ steps.image.outputs.ghcr }}:smoke
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             NGINX_VERSION=${{ steps.args.outputs.nginx }}
@@ -102,5 +104,5 @@ jobs:
       - name: 冒烟测试（验证模块能正常加载）
         run: |
           docker run --rm \
-            ${{ steps.image.outputs.name }}:smoke \
+            ${{ steps.image.outputs.ghcr }}:smoke \
             nginx -t
