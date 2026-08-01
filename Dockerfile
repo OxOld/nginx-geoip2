@@ -48,8 +48,10 @@ RUN git clone --depth 1 --branch "${GEOIP2_MODULE_VERSION}" \
 WORKDIR /usr/src/nginx
 
 # 复用官方镜像的 configure 参数（保证 ABI 兼容），追加 geoip2 动态模块
+# 注意：nginx -V 输出的参数带引号（如 --with-cc-opt='-g -O2 ...'），
+# 需要用 eval 重新解析引号，否则空格会被拆成独立参数导致 configure 报错
 RUN CONFARGS="$(nginx -V 2>&1 | sed -n 's/^configure arguments: //p')" \
-    && ./configure ${CONFARGS} --add-dynamic-module=/usr/src/ngx_http_geoip2_module \
+    && eval "./configure ${CONFARGS} --add-dynamic-module=/usr/src/ngx_http_geoip2_module" \
     && make -j"$(nproc)" modules
 
 # ---------- Stage 2: 运行时镜像 ----------
