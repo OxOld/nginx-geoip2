@@ -54,7 +54,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          images: ghcr.io/${{ github.repository }}
           tags: |
             type=raw,value=nginx-${{ steps.args.outputs.nginx }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
@@ -69,7 +69,7 @@ jobs:
           load: true
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:smoke
+            ghcr.io/${{ github.repository }}:smoke
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             NGINX_VERSION=${{ steps.args.outputs.nginx }}
@@ -80,5 +80,5 @@ jobs:
       - name: 冒烟测试（验证模块能正常加载）
         run: |
           docker run --rm \
-            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:smoke \
+            ghcr.io/${{ github.repository }}:smoke \
             nginx -t
