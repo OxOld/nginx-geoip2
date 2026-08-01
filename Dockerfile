@@ -69,7 +69,7 @@ RUN apt-get update \
 
 # 配置文件：启用模块 + 示例配置
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY conf.d/geoip2.example.conf /etc/nginx/conf.d/geoip2.example.conf
+COPY conf.d/geoip2.conf.example /etc/nginx/conf.d/geoip2.conf.example
 
 STOPSIGNAL SIGQUIT
 

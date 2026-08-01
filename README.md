@@ -54,10 +54,10 @@ curl http://localhost/geoip
 ## 配置说明
 
 - `nginx.conf` 在 main 上下文通过 `load_module` 加载了编译好的模块。
-- `conf.d/geoip2.example.conf` 是完整的"只允许中国 IP"配置示例（含变量定义、403 拦截、验证接口）。需要时复制为 `geoip2.conf`：
+- `conf.d/geoip2.conf.example` 是完整的"只允许中国 IP"配置示例（含变量定义、403 拦截、验证接口）。注意它以 `.example` 结尾，不会被 nginx 自动加载；需要时复制为 `geoip2.conf`：
 
 ```bash
-docker exec nginx-geoip2 cp /etc/nginx/conf.d/geoip2.example.conf /etc/nginx/conf.d/geoip2.conf
+docker exec nginx-geoip2 cp /etc/nginx/conf.d/geoip2.conf.example /etc/nginx/conf.d/geoip2.conf
 docker exec nginx-geoip2 nginx -s reload
 ```
 
