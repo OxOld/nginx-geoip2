@@ -68,6 +68,7 @@ docker exec nginx-geoip2 nginx -s reload
 推送到 GitHub 后，[.github/workflows/docker-build.yml](.github/workflows/docker-build.yml) 会自动构建并发布镜像到 GitHub 容器仓库（GHCR）：
 
 - 推送到 `main` → 构建并推送 `ghcr.io/oxold/nginx-geoip2:latest` 和 `:nginx-1.30.4`
+- 同时在仓库设置（Settings → Secrets and variables → Actions）里配置 `DOCKERHUB_USERNAME` 和 `DOCKERHUB_TOKEN` 后，还会推送到 Docker Hub（`docker.io/<用户名>/nginx-geoip2`）；不配置则只推 GHCR
 - 打 `v*` 标签（如 `v1.30.4`）→ 额外推送语义化版本标签
 - 提 PR → 只做编译验证（含 `nginx -t` 冒烟测试），不推送
 - 手动触发（Actions 页面 "Run workflow"）→ 可指定 nginx / geoip2 模块版本重新构建
@@ -81,6 +82,12 @@ docker pull ghcr.io/oxold/nginx-geoip2:latest
 docker run -d --name nginx-geoip2 -p 80:80 \
   -v /host/path/Country-All.mmdb:/etc/nginx/geoip/Country-All.mmdb:ro \
   ghcr.io/oxold/nginx-geoip2:latest
+```
+
+配置了 Docker Hub 密钥后也可以：
+
+```bash
+docker pull <你的DockerHub用户名>/nginx-geoip2:latest
 ```
 
 ## 单独导出模块文件
