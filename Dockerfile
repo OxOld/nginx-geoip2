@@ -3,23 +3,36 @@
 # =============================================================
 # nginx + ngx_http_geoip2_module
 #
-# 构建:  docker build -t nginx-geoip2 .
+# 版本号唯一修改处：项目根目录 .env 文件
+#   NGINX_VERSION=1.30.4
+#   GEOIP2_MODULE_VERSION=3.4
+#
+# 构建（Bash / Git Bash）:
+#   set -a && . ./.env && set +a \
+#   && docker build --build-arg NGINX_VERSION --build-arg GEOIP2_MODULE_VERSION \
+#      -t nginx-geoip2 .
+#
+# 构建（PowerShell）:
+#   Get-Content .env | ForEach-Object { if ($_ -match '^\s*([A-Z0-9_]+)=(.*)$') \
+#     { Set-Item "Env:$($matches[1])" $matches[2] } }
+#   docker build --build-arg NGINX_VERSION --build-arg GEOIP2_MODULE_VERSION -t nginx-geoip2 .
+#
 # 运行:  docker run -d -p 80:80 \
 #          -v /host/GeoLite2-Country.mmdb:/etc/nginx/geoip/GeoLite2-Country.mmdb:ro \
 #          nginx-geoip2
 #
 # 构建参数:
-#   NGINX_VERSION           nginx 版本（必须与官方镜像 tag 一致），默认 1.31.3
-#   GEOIP2_MODULE_VERSION   ngx_http_geoip2_module 版本，默认 3.4
+#   NGINX_VERSION           nginx 版本（必须与官方镜像 tag 一致）
+#   GEOIP2_MODULE_VERSION   ngx_http_geoip2_module 版本（可传 master 使用最新代码）
 # =============================================================
 
-ARG NGINX_VERSION=1.31.3
+ARG NGINX_VERSION
 
 # ---------- Stage 1: 编译 geoip2 动态模块 ----------
 FROM nginx:${NGINX_VERSION} AS builder
 
 ARG NGINX_VERSION
-ARG GEOIP2_MODULE_VERSION=3.4
+ARG GEOIP2_MODULE_VERSION
 
 # 编译工具链与依赖
 RUN apt-get update \

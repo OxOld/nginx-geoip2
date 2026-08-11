@@ -17,21 +17,31 @@
 
 ## 构建
 
-```bash
-docker build -t nginx-geoip2 .
+nginx 与 geoip2 模块的版本号**只需修改根目录 `.env` 文件**（Dockerfile 与 GitHub Actions 都从这里读取）：
+
+```env
+NGINX_VERSION=1.30.4
+GEOIP2_MODULE_VERSION=3.4
 ```
 
-可用构建参数：
-
-| 参数 | 默认值 | 说明 |
-| --- | --- | --- |
-| `NGINX_VERSION` | `1.30.4` | nginx 版本，需与官方镜像 tag 一致 |
-| `GEOIP2_MODULE_VERSION` | `3.4` | geoip2 模块版本；若新版本 nginx 编译报错，可传 `master` 使用最新代码 |
+本地构建（Bash / Git Bash）：
 
 ```bash
-# 示例：换用其他 nginx 版本
-docker build --build-arg NGINX_VERSION=1.29.6 -t nginx-geoip2 .
+set -a && . ./.env && set +a
+docker build --build-arg NGINX_VERSION --build-arg GEOIP2_MODULE_VERSION -t nginx-geoip2 .
 ```
+
+本地构建（PowerShell）：
+
+```powershell
+Get-Content .env | ForEach-Object { if ($_ -match '^\s*([A-Z0-9_]+)=(.*)$') { Set-Item "Env:$($matches[1])" $matches[2] } }
+docker build --build-arg NGINX_VERSION --build-arg GEOIP2_MODULE_VERSION -t nginx-geoip2 .
+```
+
+| 参数 | 说明 |
+| --- | --- |
+| `NGINX_VERSION` | nginx 版本，需与官方镜像 tag 一致 |
+| `GEOIP2_MODULE_VERSION` | geoip2 模块版本；若新版本 nginx 编译报错，可改 `master` 使用最新代码 |
 
 ## 运行
 
@@ -65,13 +75,12 @@ docker exec nginx-geoip2 nginx -s reload
 
 ## 自动编译（GitHub Actions）
 
-推送到 GitHub 后，[.github/workflows/docker-build.yml](.github/workflows/docker-build.yml) 会自动构建并发布镜像到 GitHub 容器仓库（GHCR）：
+推送到 GitHub 后，[.github/workflows/docker-build.yml](.github/workflows/docker-build.yml) 会自动构建并发布镜像到 GitHub 容器仓库（GHCR），版本号同样读取 `.env`：
 
-- 推送到 `main` → 构建并推送 `ghcr.io/oxold/nginx-geoip2:latest` 和 `:nginx-1.30.4`
+- 推送到 `main` → 构建并推送 `latest` 和版本号（如 `1.30.4`）两个标签到 GHCR（`ghcr.io/oxold/nginx-geoip2`）
 - 同时在仓库设置（Settings → Secrets and variables → Actions）里配置 `DOCKERHUB_USERNAME` 和 `DOCKERHUB_TOKEN` 后，还会推送到 Docker Hub（`docker.io/<用户名>/nginx-geoip2`）；不配置则只推 GHCR
-- 打 `v*` 标签（如 `v1.30.4`）→ 额外推送语义化版本标签
 - 提 PR → 只做编译验证（含 `nginx -t` 冒烟测试），不推送
-- 手动触发（Actions 页面 "Run workflow"）→ 可指定 nginx / geoip2 模块版本重新构建
+- 手动触发（Actions 页面 "Run workflow"）→ 按当前 `.env` 中的版本重新构建
 
 不需要任何额外密钥：镜像推送到 GHCR，登录凭据用 GitHub 自带的 `GITHUB_TOKEN`。
 

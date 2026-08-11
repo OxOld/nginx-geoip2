@@ -7,20 +7,9 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      nginx_version:
-        description: nginx 版本（留空用默认 1.30.4）
-        required: false
-        default: '1.30.4'
-      geoip2_version:
-        description: ngx_http_geoip2_module 版本（留空用默认 3.4）
-        required: false
-        default: '3.4'
 
 env:
   IMAGE_NAME: nginx-geoip2
-  NGINX_VERSION: '1.30.4'
-  GEOIP2_VERSION: '3.4'
 
 jobs:
   build:
@@ -35,11 +24,14 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 确定构建参数
+      - name: 读取版本号（.env 为唯一修改处）
         id: args
         run: |
-          echo "nginx=${{ github.event.inputs.nginx_version || env.NGINX_VERSION }}" >> "$GITHUB_OUTPUT"
-          echo "geoip2=${{ github.event.inputs.geoip2_version || env.GEOIP2_VERSION }}" >> "$GITHUB_OUTPUT"
+          set -a
+          . ./.env
+          set +a
+          echo "nginx=$NGINX_VERSION" >> "$GITHUB_OUTPUT"
+          echo "geoip2=$GEOIP2_MODULE_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: 计算镜像名（GHCR 要求全小写）
         id: image
@@ -74,16 +66,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 生成镜像标签
+      - name: 生成镜像标签（latest + 版本号）
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ steps.images.outputs.list }}
           tags: |
-            type=raw,value=nginx-${{ steps.args.outputs.nginx }}
+            type=raw,value=${{ steps.args.outputs.nginx }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=semver,pattern={{version}}
-            type=sha
 
       - name: 构建并推送
         uses: docker/build-push-action@v6
