@@ -17,18 +17,24 @@ server {
     listen 80;
     server_name _;
 
+    # 所有文本响应统一声明 UTF-8，避免中文乱码
+    charset utf-8;
+
     # 输出判定结果，用于验证模块是否生效
     location /geoip {
         default_type text/plain;
-        return 200 "country_code=$geoip2_data_country_code\n"
-                   "country_name=$geoip2_data_country_name\n";
+        return 200 "country_code=$geoip2_data_country_code\ncountry_name=$geoip2_data_country_name\n";
+    }
+
+    default_type text/html;
+
+    # 如果不是中国 IP，则返回 451。调试的时候可以把 CN|TW|HK|MO 更换为 US 什么的
+    if ($geoip2_data_country_code !~ ^(CN|TW|HK|MO)$) {
+        # 返回 451 状态码 与 自定义 HTML，不需要美化提示页面也可以删除后面的 HTML 部分
+        return 451 "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\"content=\"width=device-width, initial-scale=1.0\"><title>访问受限</title><style>*{margin:0;padding:0;box-sizing:border-box}body{min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:\"PingFang SC\",\"Microsoft YaHei\",-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);color:#fff}.card{max-width:480px;margin:24px;padding:52px 44px;text-align:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.14);border-radius:20px;backdrop-filter:blur(10px);box-shadow:0 20px 60px rgba(0,0,0,0.35)}.icon{font-size:64px;line-height:1;margin-bottom:22px}h1{font-size:26px;margin-bottom:14px;letter-spacing:2px}p{font-size:15px;line-height:1.9;color:rgba(255,255,255,0.82)}p b{color:#ffd27f;font-weight:600}.code{display:inline-block;margin-top:24px;padding:7px 16px;font-size:13px;letter-spacing:1px;color:#ffd27f;background:rgba(255,210,127,0.12);border:1px solid rgba(255,210,127,0.35);border-radius:999px}@media(max-width:520px){.card{padding:40px 26px}h1{font-size:22px}}</style></head><body><div class=\"card\"><div class=\"icon\">🌏</div><h1>访问受限</h1><p>该服务仅面向<b>中国地区</b>用户开放。<br>检测到您的访问来源不在允许范围内，<br>本次请求已被拦截。</p><span class=\"code\">Error 451·Access Restricted</span></div></body></html>";
     }
 
     location / {
-        # 只允许中国（CN）：非 CN 一律 403
-        # （国外 IP 返回对应国家码、无记录/内网 IP 变量为空，都会被拦截）
-        if ($geoip2_data_country_code !~ ^CN$) { return 403; }
-
         root   /usr/share/nginx/html;
         index  index.html index.htm;
     }

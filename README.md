@@ -61,7 +61,7 @@ docker exec nginx-geoip2 cp /etc/nginx/conf.d/geoip2.conf.example /etc/nginx/con
 docker exec nginx-geoip2 nginx -s reload
 ```
 
-规则逻辑：`if ($geoip2_data_country_code !~ ^CN$) { return 403; }` —— 中国 IP 放行；国外 IP、无记录 IP、内网 IP（变量为空）全部返回 403。
+规则逻辑：`if ($geoip2_data_country_code !~ ^(CN|TW|HK|MO)$) { return 451; }` —— 中国（大陆、台湾、香港、澳门）IP 放行；国外 IP、无记录 IP、内网 IP（变量为空）全部返回 451（RFC 7725 地理封锁专用状态码，与后端业务 403 区分）。
 
 ## 自动编译（GitHub Actions）
 
