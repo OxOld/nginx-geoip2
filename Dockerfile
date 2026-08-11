@@ -9,11 +9,11 @@
 #          nginx-geoip2
 #
 # 构建参数:
-#   NGINX_VERSION           nginx 版本（必须与官方镜像 tag 一致），默认 1.30.4
+#   NGINX_VERSION           nginx 版本（必须与官方镜像 tag 一致），默认 1.31.3
 #   GEOIP2_MODULE_VERSION   ngx_http_geoip2_module 版本，默认 3.4
 # =============================================================
 
-ARG NGINX_VERSION=1.30.4
+ARG NGINX_VERSION=1.31.3
 
 # ---------- Stage 1: 编译 geoip2 动态模块 ----------
 FROM nginx:${NGINX_VERSION} AS builder
